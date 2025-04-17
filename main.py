@@ -65,4 +65,4 @@ def update_output(contents):
         return html.Div("Upload an Excel file to see the Sunburst chart.")
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False, host="0.0.0.0", port=8050)
