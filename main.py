@@ -6,15 +6,24 @@ import pandas as pd
 import plotly.express as px
 import os
 import shutil
+from pathlib import Path
+
+# Get the application root directory
+APP_ROOT = Path(__file__).parent.absolute()
 
 # Create uploads directory if it doesn't exist
-UPLOADS_DIR = 'uploads'
+UPLOADS_DIR = os.path.join(APP_ROOT, 'uploads')
 if not os.path.exists(UPLOADS_DIR):
     os.makedirs(UPLOADS_DIR)
 
 LATEST_FILE = os.path.join(UPLOADS_DIR, 'latest.xlsx')
 
-app = dash.Dash(__name__)
+# Initialize the Dash app with proper configuration
+app = dash.Dash(
+    __name__,
+    suppress_callback_exceptions=True,
+    meta_tags=[{'name': 'viewport', 'content': 'width=device-width, initial-scale=1'}]
+)
 
 app.layout = html.Div([
     html.H1("Upload Excel File for Sunburst Chart"),
@@ -77,4 +86,11 @@ def update_output(contents):
         return html.Div("Upload an Excel file to see the Sunburst chart.")
 
 if __name__ == '__main__':
-    app.run(debug=False, host="0.0.0.0", port=8050)
+    # Get port from environment variable or use default
+    port = int(os.environ.get('PORT', 8050))
+    # Get host from environment variable or use default
+    host = os.environ.get('HOST', '0.0.0.0')
+    # Get debug mode from environment variable
+    debug = os.environ.get('DEBUG', 'False').lower() == 'true'
+    
+    app.run(debug=debug, host=host, port=port)
