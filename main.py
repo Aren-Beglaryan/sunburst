@@ -5,6 +5,14 @@ import io
 import pandas as pd
 import plotly.express as px
 import os
+import shutil
+
+# Create uploads directory if it doesn't exist
+UPLOADS_DIR = 'uploads'
+if not os.path.exists(UPLOADS_DIR):
+    os.makedirs(UPLOADS_DIR)
+
+LATEST_FILE = os.path.join(UPLOADS_DIR, 'latest.xlsx')
 
 app = dash.Dash(__name__)
 
@@ -41,6 +49,11 @@ def parse_and_plot(contents: str) -> html.Div:
     try:
         content_type, content_string = contents.split(',')
         decoded = base64.b64decode(content_string)
+        
+        # Save the uploaded file
+        with open(LATEST_FILE, 'wb') as f:
+            f.write(decoded)
+            
         df = pd.read_excel(io.BytesIO(decoded))
         return parse_and_plot_df(df)
     except Exception as e:
@@ -54,14 +67,13 @@ def update_output(contents):
     if contents is not None:
         return parse_and_plot(contents)
     else:
-        # Load default Excel if no file uploaded
-        default_path = 'example.xlsx'
-        if os.path.exists(default_path):
+        # Load the latest saved file if it exists
+        if os.path.exists(LATEST_FILE):
             try:
-                df = pd.read_excel(default_path)
+                df = pd.read_excel(LATEST_FILE)
                 return parse_and_plot_df(df)
             except Exception as e:
-                return html.Div([f"Error loading default file: {str(e)}"])
+                return html.Div([f"Error loading latest file: {str(e)}"])
         return html.Div("Upload an Excel file to see the Sunburst chart.")
 
 if __name__ == '__main__':
